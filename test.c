@@ -122,4 +122,4 @@ int main() {
     return 0;
 }
 
-//Se agrego funcion oled_clear porque causaba corrupción en al momento de desconectar la raspberry.
+//Para evitar problemas de corrupción de datos al desconectar la Raspberry Pi, se agregó la función oled_clear() para limpiar la pantalla antes de que el programa termine o cuando sea necesario. Esto ayuda a dejar el OLED en un estado conocido y evita que queden residuos de datos en la pantalla.
