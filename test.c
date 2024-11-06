@@ -15,7 +15,6 @@
 #define FONT_BWIDTH 1
 #define FONT_HEIGHT 8
 
-// Definición de la fuente para caracteres A-Z
 const char FONT[HICHAR - LOCHAR + 1][FONT_HEIGHT * FONT_BWIDTH] = {
     { 0xC0,0x30,0x2C,0x30,0xC0,0x00,0x00,0x00 }, // A
     { 0xFC,0x94,0x94,0x94,0x68,0x00,0x00,0x00 }, // B
@@ -45,7 +44,7 @@ const char FONT[HICHAR - LOCHAR + 1][FONT_HEIGHT * FONT_BWIDTH] = {
     { 0xC4,0xA4,0x94,0x8C,0x84,0x00,0x00,0x00 }, // Z
 };
 
-// Inicializar I2C para la pantalla OLED
+// Inicializar I2C para el OLED
 void i2c_init_oled() {
     i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(4, GPIO_FUNC_I2C);
@@ -60,7 +59,7 @@ void oled_send_command(uint8_t cmd) {
     i2c_write_blocking(I2C_PORT, OLED_ADDR, data, 2, false);
 }
 
-// Inicializar el OLED con la configuración básica
+// Inicializar OLED
 void oled_init() {
     uint8_t init_sequence[] = {0xAE, 0x20, 0x00, 0xB0, 0xC8, 0x00, 0x10, 0x40, 0x81, 0xFF, 
                                0xA1, 0xA6, 0xA8, 0x3F, 0xA4, 0xD3, 0x00, 0xD5, 0xF0, 0xD9, 
@@ -70,9 +69,22 @@ void oled_init() {
     }
 }
 
-// Dibujar carácter en la posición dada
+// Limpiar pantalla
+void oled_clear() {
+    for (int page = 0; page < 8; page++) {
+        oled_send_command(0xB0 + page);
+        oled_send_command(0x00);
+        oled_send_command(0x10);
+        for (int col = 0; col < OLED_WIDTH; col++) {
+            uint8_t data[2] = {OLED_DATA, 0x00};
+            i2c_write_blocking(I2C_PORT, OLED_ADDR, data, 2, false);
+        }
+    }
+}
+
+// Dibujar carácter en una posición dada
 void oled_draw_char(uint8_t page, uint8_t col, char c) {
-    if (c < LOCHAR || c > HICHAR) return; // Validar rango de caracteres
+    if (c < LOCHAR || c > HICHAR) return; // Validar rango
     oled_send_command(0xB0 + page);
     oled_send_command(0x00 + (col & 0x0F));
     oled_send_command(0x10 + (col >> 4));
@@ -82,7 +94,7 @@ void oled_draw_char(uint8_t page, uint8_t col, char c) {
     }
 }
 
-// Dibujar texto en una posición dada
+// Dibujar texto a partir de una cadena en una posición dada
 void oled_draw_text(uint8_t page, uint8_t start_col, const char* text) {
     for (int i = 0; text[i] != '\0'; i++) {
         oled_draw_char(page, start_col + (i * FONT_BWIDTH * 8), text[i]);
@@ -93,16 +105,21 @@ int main() {
     stdio_init_all();
     i2c_init_oled();
     oled_init();
+    oled_clear();
 
-    // Escribir el nombre en el OLED
+    // Texto "DIEGO" en la primera línea
     const char* line1 = "DIEGO";
-    oled_draw_text(0, 0, line1);  // Primera línea
+    oled_draw_text(0, 0, line1);  // Dibujar en la primera línea
 
+    // Texto "HERNANDEZ" en la segunda línea
     const char* line2 = "HERNANDEZ";
-    oled_draw_text(1, 0, line2);  // Segunda línea
+    oled_draw_text(1, 0, line2);  // Dibujar en la segunda línea
 
-    const char* line3 = "GOMEZ";
-    oled_draw_text(2, 0, line3);  // Tercera línea
+    // Texto "GOMEZ" en la tercera línea
+ const char* line3 = "GOMEZ";
+    oled_draw_text(2, 0, line3);  // Dibujar en la tercera línea
 
     return 0;
 }
+
+//Se agrego funcion oled_clear porque causaba corrupción en al momento de desconectar la raspberry.
