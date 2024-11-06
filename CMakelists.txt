@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.13)
+
+# Incluir el SDK de Pico
+include(pico_sdk_import.cmake)
+
+project(oled_display_example)
+
+# Inicializar el SDK de Pico
+pico_sdk_init()
+
+# Añadir el archivo fuente
+add_executable(oled_display_example test.c)
+
+# Vincular las bibliotecas necesarias
+target_link_libraries(oled_display_example
+    pico_stdlib
+    hardware_i2c  # Agregar la biblioteca I2C
+)
+
+# Habilitar la salida USB
+pico_enable_stdio_usb(oled_display_example 1)
+
+# Deshabilitar la salida UART (opcional)
+pico_enable_stdio_uart(oled_display_example 0)
+
+# Generar los archivos binarios adicionales (uf2, bin, hex)
+pico_add_extra_outputs(oled_display_example)
